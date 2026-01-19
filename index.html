@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Published App</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#6200ee" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js");
+      });
+    }
+  </script>
+  <style>
+    body { margin:0; font-family:sans-serif; background:#fafafa; display:flex; justify-content:center; }
+    #app { width:360px; padding:20px; }
+    button { padding:10px; margin:6px 0; background:#6200ee; color:white; border:none; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const schema = {
+  "app": {
+    "name": "Todo App",
+    "packageName": "com.example.todoapp",
+    "icon": "todo_icon"
+  },
+  "theme": {
+    "primaryColor": "#2196F3",
+    "backgroundColor": "#F5F5F5"
+  },
+  "screens": [
+    {
+      "id": "screen_home",
+      "name": "Home",
+      "components": [
+        {
+          "id": "comp_home_title",
+          "type": "Text",
+          "props": {
+            "text": "My To-Do List"
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_home_spacer_1",
+          "type": "Spacer",
+          "props": {
+            "height": 20
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_home_todo_list",
+          "type": "List",
+          "props": {
+            "items": [
+              "Buy groceries",
+              "Call mom",
+              "Finish report"
+            ]
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_home_spacer_2",
+          "type": "Spacer",
+          "props": {
+            "height": 30
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_home_add_button",
+          "type": "Button",
+          "props": {
+            "label": "Add New To-Do",
+            "action": {
+              "type": "navigate",
+              "targetScreenId": "screen_add_todo"
+            }
+          },
+          "style": {}
+        }
+      ]
+    },
+    {
+      "id": "screen_add_todo",
+      "name": "Add To-Do",
+      "components": [
+        {
+          "id": "comp_add_title",
+          "type": "Text",
+          "props": {
+            "text": "Add New To-Do"
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_add_spacer_1",
+          "type": "Spacer",
+          "props": {
+            "height": 20
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_add_label_input",
+          "type": "Text",
+          "props": {
+            "text": "Enter To-Do item:"
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_add_spacer_2",
+          "type": "Spacer",
+          "props": {
+            "height": 50
+          },
+          "style": {}
+        },
+        {
+          "id": "comp_add_buttons_container",
+          "type": "Container",
+          "children": [
+            {
+              "id": "comp_add_save_button",
+              "type": "Button",
+              "props": {
+                "label": "Save To-Do",
+                "action": {
+                  "type": "navigate",
+                  "targetScreenId": "screen_home"
+                }
+              },
+              "style": {}
+            },
+            {
+              "id": "comp_add_cancel_button",
+              "type": "Button",
+              "props": {
+                "label": "Cancel",
+                "action": {
+                  "type": "navigate",
+                  "targetScreenId": "screen_home"
+                }
+              },
+              "style": {}
+            }
+          ],
+          "style": {}
+        }
+      ]
+    }
+  ]
+};
+    let currentScreenId = schema.screens[0].id;
+
+    function render() {
+      const root = document.getElementById("app");
+      root.innerHTML = "";
+      const screen = schema.screens.find(s => s.id === currentScreenId);
+      if (!screen) return;
+      screen.components.forEach(c => renderComponent(c, root));
+    }
+
+    function renderComponent(component, parent) {
+      let el;
+      switch (component.type) {
+        case "Text":
+          el = document.createElement("p");
+          el.textContent = component.props.text;
+          break;
+        case "Button":
+          el = document.createElement("button");
+          el.textContent = component.props.label;
+          el.onclick = () => {
+            currentScreenId = component.props.action.targetScreenId;
+            render();
+          };
+          break;
+        case "Image":
+          el = document.createElement("img");
+          el.src = component.props.src;
+          el.style.width = "100%";
+          break;
+        case "Spacer":
+          el = document.createElement("div");
+          el.style.height = component.props.height + "px";
+          break;
+        case "List":
+          el = document.createElement("ul");
+          component.props.items.forEach(i => {
+            const li = document.createElement("li");
+            li.textContent = i;
+            el.appendChild(li);
+          });
+          break;
+        case "Container":
+          el = document.createElement("div");
+          el.style.border = "1px dashed #aaa";
+          el.style.padding = "10px";
+          component.children.forEach(child => renderComponent(child, el));
+          break;
+      }
+      parent.appendChild(el);
+    }
+
+    render();
+  </script>
+</body>
+</html>
